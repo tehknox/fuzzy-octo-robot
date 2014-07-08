@@ -1,4 +1,6 @@
 import java.io.*;
+
+import game.*;
 import java.net.*;
 
 public class Client
@@ -15,25 +17,32 @@ public class Client
             input    = new BufferedInputStream(MyClient.getInputStream());
             output   = new BufferedOutputStream(MyClient.getOutputStream());
             BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
+            
             while(1 == 1){
                 char cmd = 0;
 
                 cmd = (char)input.read();
 
-                // DÃ©but de la partie en joueur blanc
-                if(cmd == '1'){
+                // Début de la partie en joueur blanc
+                
+                if(cmd == '1'){  
                     byte[] aBuffer = new byte[1024];
-
+                    Board.getInstance().setPlayerIsBlack(false);
+                    
                     int size = input.available();
                     //System.out.println("size " + size);
                     input.read(aBuffer,0,size);
                     String s = new String(aBuffer).trim();
                     String[] boardValues;
                     boardValues = s.split(" ");
-
+                  
+                    
                     int x=0,y=0;
                     for(int i=0; i<boardValues.length;i++){
                         board[x][y] = Integer.parseInt(boardValues[i]);
+                        //remplir le board du AI
+                        Board.getInstance().setCase(x,y,Integer.parseInt(boardValues[i]));
+                        
                         x++;
                         if(x == 8){
                             x = 0;
@@ -48,12 +57,12 @@ public class Client
                     output.flush();
                 }
 
-                // DÃ©but de la partie en joueur Noir
+                // Début de la partie en joueur Noir
                 if(cmd == '2'){
 
                     System.out.println("Nouvelle partie! Vous jouer noir, attendez le coup des blancs");
                     byte[] aBuffer = new byte[1024];
-
+                    Board.getInstance().setPlayerIsBlack(true);
                     int size = input.available();
                     //System.out.println("size " + size);
                     input.read(aBuffer,0,size);
@@ -63,17 +72,21 @@ public class Client
                     int x=0,y=0;
                     for(int i=0; i<boardValues.length;i++){
                         board[x][y] = Integer.parseInt(boardValues[i]);
+                      //remplir le board du AI
+                        Board.getInstance().setCase(x,y,Integer.parseInt(boardValues[i]));
                         x++;
                         if(x == 8){
                             x = 0;
                             y++;
                         }
                     }
+                    
+                    Board.getInstance().printBoard();
                 }
 
 
                 // Le serveur demande le prochain coup
-                // Le message contient aussi le dernier coup jouÃ©.
+                // Le message contient aussi le dernier coup joué.
                 if(cmd == '3'){
                     byte[] aBuffer = new byte[16];
 
