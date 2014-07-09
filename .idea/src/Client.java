@@ -1,7 +1,10 @@
 import java.io.*;
 
 import game.*;
+
 import java.net.*;
+
+import logic.*;
 
 public class Client
 {
@@ -18,7 +21,7 @@ public class Client
             output   = new BufferedOutputStream(MyClient.getOutputStream());
             BufferedReader console = new BufferedReader(new InputStreamReader(System.in));
             
-            while(1 == 1){
+            while(1 < 2){
                 char cmd = 0;
 
                 cmd = (char)input.read();
@@ -42,11 +45,10 @@ public class Client
                         board[x][y] = Integer.parseInt(boardValues[i]);
                         //remplir le board du AI
                         Board.getInstance().setCase(x,y,Integer.parseInt(boardValues[i]));
-                        
-                        x++;
-                        if(x == 8){
+                        y++;
+                        if(y == 8){
                             x = 0;
-                            y++;
+                            x++;
                         }
                     }
 
@@ -74,10 +76,10 @@ public class Client
                         board[x][y] = Integer.parseInt(boardValues[i]);
                       //remplir le board du AI
                         Board.getInstance().setCase(x,y,Integer.parseInt(boardValues[i]));
-                        x++;
-                        if(x == 8){
-                            x = 0;
-                            y++;
+                        y++;
+                        if(y == 8){
+                            y = 0;
+                            x++;
                         }
                     }
                     
@@ -94,14 +96,29 @@ public class Client
                     //System.out.println("size " + size);
                     input.read(aBuffer,0,size);
 
-                    String s = new String(aBuffer);
-                    System.out.println("Dernier coup : "+ s);
+                    String s = new String(aBuffer);                
+                    ActionGenerator gen = new ActionGenerator();
+                    Action action = new Action(s, Board.getInstance().isPlayerIsBlack());
+                    Board.getInstance().updateBoard(action);
+             
+                    /*
                     System.out.println("Entrez votre coup : ");
-                    String move = null;
                     move = console.readLine();
+                    */
+                    //action = new Action(move, Board.getInstance().isPlayerIsBlack());
+                    Action playerAction = gen.generateAction(Board.getInstance().isPlayerIsBlack());
+                    System.out.println(playerAction.getX() + " - " + playerAction.getY());
+                    System.out.println(playerAction.getX2() + " - " + playerAction.getY2());
+                 
+                    
+                    Board.getInstance().updateBoard(playerAction);
+                    String move = null;
+                    move = playerAction.getMoveAsString(playerAction);
+            
+                    System.out.println(move);
+                    
                     output.write(move.getBytes(),0,move.length());
                     output.flush();
-
                 }
                 // Le dernier coup est invalide
                 if(cmd == '4'){
