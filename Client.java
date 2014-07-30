@@ -9,7 +9,7 @@ public class Client
 {
     public static void main(String[] args)
     {
-        //test(); if (1 == 1) return;
+        //if (1 == 1) return;
 
         Socket MyClient;
         BufferedInputStream input;
@@ -164,15 +164,16 @@ public class Client
     private static void test()
     {
         byte p = Util.getPawnColorCode(false);
+        byte q = Util.getPawnColorCode(true);
 
-        byte[] a = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] b = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] c = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] d = { 0, 0, 0, p, p, 0, 0, 0 };
-        byte[] e = { 0, 0, 0, p, p, 0, 0, 0 };
-        byte[] f = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] g = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] h = { 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] a = { 0, 0, 0, 0, 0, 0, q, q };
+        byte[] b = { 0, p, 0, 0, 0, 0, 0, q };
+        byte[] c = { p, 0, 0, 0, 0, 0, 0, q };
+        byte[] d = { p, 0, 0, p, p, 0, 0, q };
+        byte[] e = { p, 0, 0, p, p, 0, 0, q };
+        byte[] f = { 0, p, 0, 0, q, 0, 0, q };
+        byte[] g = { 0, 0, p, 0, 0, q, q, 0 };
+        byte[] h = { 0, 0, 0, 0, 0, 0, q, q };
 
         byte[][] byteBoard = { a, b, c, d, e, f, g, h };
         Board board = new Board(byteBoard, false);

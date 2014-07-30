@@ -1,4 +1,6 @@
 package Logic;
+import Game.Coordinate;
+import java.util.BitSet;
 
 public class Util
 {
@@ -21,5 +23,16 @@ public class Util
     {
         byte pawnColor = 4; if (black) pawnColor = 2;
         return pawnColor;
+    }
+
+    // Returns the index of a specific pawn in a pawn array
+    public static Coordinate getPawnFromArray(Coordinate[] pawns, int x, int y)
+    {
+        Coordinate output = null;
+        for (int i = 0; i < pawns.length; i++)
+        {
+            if (pawns[i].X == x && pawns[i].Y == y) { output = pawns[i]; break; }
+        }
+        return output;
     }
 }
