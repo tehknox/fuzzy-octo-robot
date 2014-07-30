@@ -19,7 +19,7 @@ public class MoveGenerator
         // Get the pawn color
         int playerPawn = 4;
         int enemyPawn = 2;
-             if (board[x][y] == 2) { playerPawn = 2; enemyPawn = 4; }
+        if (board[x][y] == 2) { playerPawn = 2; enemyPawn = 4; }
         else if (board[x][y] == 4) { playerPawn = 4; enemyPawn = 2; }
 
         if (board[x][y] == 2) enemyPawn = 4;

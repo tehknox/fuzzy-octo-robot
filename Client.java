@@ -9,7 +9,7 @@ public class Client
 {
     public static void main(String[] args)
     {
-        //testMoves(); if (1 == 1) return;
+        //test(); if (1 == 1) return;
 
         Socket MyClient;
         BufferedInputStream input;
@@ -48,17 +48,22 @@ public class Client
                     rollbackBoard = new Board(board);
 
                     // Generate a game tree
-                    GameTree tree = new GameTree(board.getBoard(), board.isPlayerIsBlack(), 4);
+                    Tree tree = new Tree(board, 4, 11f);
 
                     // Rock on
-                    Move nextMove = tree.findBestMove(board.isPlayerIsBlack());
+                    Move nextMove = tree.getBestMove();
                     board.movePawn(nextMove);
                     String move = nextMove.getMoveAsString();
                     output.write(move.getBytes(), 0, move.length());
                     output.flush();
 
                     // Display the game
-                    board.printBoard();
+                    //board.printBoard();
+                    System.out.println("Current score: " + Evaluator.evaluate(board));
+
+                    // Run the garbage collector
+                    tree = null;
+                    System.gc();
                 }
 
                 // The game begins as the black player
@@ -99,17 +104,22 @@ public class Client
                     board.movePawn(new Move(s));
 
                     // Generate a game tree
-                    GameTree tree = new GameTree(board.getBoard(), board.isPlayerIsBlack(), 4);
+                    Tree tree = new Tree(board, 4, 11f);
 
                     // Rock on
-                    Move nextMove = tree.findBestMove(board.isPlayerIsBlack());
+                    Move nextMove = tree.getBestMove();
                     board.movePawn(nextMove);
                     String move = nextMove.getMoveAsString();
                     output.write(move.getBytes(), 0, move.length());
                     output.flush();
 
                     // Display the game
-                    board.printBoard();
+                    //board.printBoard();
+                    System.out.println("Current score: " + Evaluator.evaluate(board));
+
+                    // Run the garbage collector
+                    tree = null;
+                    System.gc();
                 }
 
                 // The specified move is invalid
@@ -121,10 +131,10 @@ public class Client
                     board = new Board(rollbackBoard);
 
                     // Generate a game tree
-                    GameTree tree = new GameTree(board.getBoard(), board.isPlayerIsBlack(), 4);
+                    Tree tree = new Tree(board, 4, 11f);
 
                     // Rock on
-                    Move nextMove = tree.findBestMove(board.isPlayerIsBlack());
+                    Move nextMove = tree.getBestMove();
                     board.movePawn(nextMove);
                     System.out.println("Next move: {" + nextMove.x1 + ", " + nextMove.y1 + "} -> {" + nextMove.x2 + ", " + nextMove.y2 + "}");
                     String move = nextMove.getMoveAsString();
@@ -137,7 +147,11 @@ public class Client
                     output.flush();
 
                     // Display the game
-                    board.printBoard();
+                    //board.printBoard();
+
+                    // Run the garbage collector
+                    tree = null;
+                    System.gc();
                 }
             }
         }
@@ -146,37 +160,27 @@ public class Client
         }
     }
 
-    // Move generator tester
-    private static void testMoves()
+    // Testing function
+    private static void test()
     {
+        byte p = Util.getPawnColorCode(false);
+
         byte[] a = { 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] b = { 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] c = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] d = { 0, 0, 0, 0, 0, 0, 0, 0 };
-        byte[] e = { 0, 0, 0, 0, 0, 0, 0, 0 };
+        byte[] d = { 0, 0, 0, p, p, 0, 0, 0 };
+        byte[] e = { 0, 0, 0, p, p, 0, 0, 0 };
         byte[] f = { 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] g = { 0, 0, 0, 0, 0, 0, 0, 0 };
         byte[] h = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
         byte[][] byteBoard = { a, b, c, d, e, f, g, h };
+        Board board = new Board(byteBoard, false);
 
-        Move[] moves = MoveGenerator.getMoves(byteBoard, 7, 7, true);
-        for (int m = 0; m < moves.length; m++)
-        {
-            Move move = moves[m];
-            byteBoard[move.x2][move.y2] = 9;
+        board.printBoard();
+        int value = Evaluator.evaluate(board);
 
-        }
-
-        for (int x = 0; x < 8; x++)
-        {
-            for (int y = 0; y < 8; y++)
-            {
-                System.out.print(byteBoard[x][y] + " ");
-            }
-
-            System.out.println("");
-        }
+        System.out.println(value);
     }
 
 }

@@ -1,5 +1,8 @@
 package Game;
 
+import Logic.Util;
+import java.util.ArrayList;
+
 public class Board
 {
     private byte[][] board;
@@ -15,8 +18,14 @@ public class Board
     public Board(Board input)
     {
         playerIsBlack = input.isPlayerIsBlack();
-        board = new byte[8][8];
-        System.arraycopy(input.getBoard(), 0, board, 0, 8);
+        board = Util.cloneJaggedArray(input.getBoard());
+    }
+
+    // Copy a byte board
+    public Board(byte[][] inputBoard, boolean isPlayerBlack)
+    {
+        playerIsBlack = isPlayerBlack;
+        board = Util.cloneJaggedArray(inputBoard);
     }
 
     // Print the board in the console (Debug feature)
@@ -57,6 +66,20 @@ public class Board
             x++;
             if (x == 8) { x = 0; y++; } if (y == 8) { break; }
         }
+    }
+
+    // Returns the coordinate of every pawn owned by a played
+    public Coordinate[] getPawns(boolean isPlayerBlack)
+    {
+        byte colorCode = Util.getPawnColorCode(isPlayerBlack);
+        ArrayList<Coordinate> coordinates = new ArrayList<Coordinate>();
+        for (int x = 0; x < 8; x++) {
+        for (int y = 0; y < 8; y++) {
+        if (board[x][y] == colorCode)
+        {
+            coordinates.add(new Coordinate(x,y));
+        }}}
+        return coordinates.toArray(new Coordinate[0]);
     }
 
     // Get the player color
