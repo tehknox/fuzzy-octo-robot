@@ -17,15 +17,95 @@ public class Evaluator
         Coordinate opponentCOM = getCenterOfMass(opponentPawns);
 
         // Calculate the total score of the board
-        value += centerOfMassRating(playerPawns, playerCOM);
-        value += uniformityRating(playerPawns);
-        value += connectednessRating(playerPawns, board.getBoard(), Util.getPawnColorCode(board.isPlayerIsBlack()));
-        //value += mobilityRating(playerPawns, board.getBoard(), Util.getPawnColorCode(board.isPlayerIsBlack()), board.isPlayerIsBlack());
-        value -= centerOfMassRating(opponentPawns, opponentCOM);
-        value -= uniformityRating(opponentPawns);
-        value -= connectednessRating(opponentPawns, board.getBoard(), Util.getPawnColorCode(!board.isPlayerIsBlack()));
-        //value -= mobilityRating(opponentPawns, board.getBoard(), Util.getPawnColorCode(!board.isPlayerIsBlack()), !board.isPlayerIsBlack());
+        value += boardRating(playerPawns, board.getBoard(), board.isPlayerIsBlack(), playerCOM);
+        value -= boardRating(opponentPawns, board.getBoard(), !board.isPlayerIsBlack(), opponentCOM);
 
+        return value;
+    }
+
+    // This function evaluates the board
+    // Optimization of the functions below
+    private static int boardRating(Coordinate[] pawns, byte[][] byteBoard, boolean isBlack, Coordinate centerOfMass)
+    {
+        int value = 0;
+        byte colorCode = Util.getPawnColorCode(isBlack);
+
+        int connectednessRating = 0;
+        int centerOfMassRating = 0;
+        int uniformityRating = 0;
+        int connectedPawns = 0;
+
+        int minX = 8;
+        int minY = 8;
+        int maxX = -1;
+        int maxY = -1;
+        // Count the number of connected pawns
+        for (int i = 0; i < pawns.length; i++)
+        {
+            // Store the coordinates
+            int x = pawns[i].X;
+            int y = pawns[i].Y;
+
+            // Count the connected pawns
+            if      (x < 7 && byteBoard[x + 1][y] == colorCode) connectedPawns++;
+            else if (x > 0 && byteBoard[x - 1][y] == colorCode) connectedPawns++;
+            else if (y > 0 && byteBoard[x][y - 1] == colorCode) connectedPawns++;
+            else if (y < 7 && byteBoard[x][y + 1] == colorCode) connectedPawns++;
+            else if (x < 7 && y < 7 && byteBoard[x + 1][y + 1] == colorCode) connectedPawns++;
+            else if (x > 0 && y < 7 && byteBoard[x - 1][y + 1] == colorCode) connectedPawns++;
+            else if (x < 7 && y > 0 && byteBoard[x + 1][y - 1] == colorCode) connectedPawns++;
+            else if (x > 0 && y > 0 && byteBoard[x - 1][y - 1] == colorCode) connectedPawns++;
+
+            // Check if the pawn is on a border or in a corner
+            if (x == 0 || x == 7) connectednessRating -= 2;
+            if (y == 0 || y == 7) connectednessRating -= 2;
+
+            // Count the average number of connection per pawn
+            if (x < 7 && byteBoard[x + 1][y] == colorCode) connectednessRating++;
+            if (x > 0 && byteBoard[x - 1][y] == colorCode) connectednessRating++;
+            if (y > 0 && byteBoard[x][y - 1] == colorCode) connectednessRating++;
+            if (y < 7 && byteBoard[x][y + 1] == colorCode) connectednessRating++;
+            if (x < 7 && y < 7 && byteBoard[x + 1][y + 1] == colorCode) connectednessRating++;
+            if (x > 0 && y < 7 && byteBoard[x - 1][y + 1] == colorCode) connectednessRating++;
+            if (x < 7 && y > 0 && byteBoard[x + 1][y - 1] == colorCode) connectednessRating++;
+            if (x > 0 && y > 0 && byteBoard[x - 1][y - 1] == colorCode) connectednessRating++;
+
+            // Calculate the average distance from the center of mass
+            int distanceX = Math.abs(x - centerOfMass.X);
+            int distanceY = Math.abs(y - centerOfMass.Y);
+            int distanceD = (int)Math.floor(Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2)));
+            int distance = Math.max(Math.max(distanceX, distanceY), distanceD);
+            centerOfMassRating += (int)Math.pow(distance, 4);
+
+            // Calculate the rectangle
+            if      (x > maxX) maxX = x;
+            else if (x < minX) minX = x;
+            if      (y > maxY) maxY = y;
+            else if (y < minY) minY = y;
+        }
+
+        // Check the winning condition
+        if (connectedPawns == pawns.length)
+        {
+            if (isWinning(pawns, byteBoard, colorCode)) return 100000;
+        }
+
+        // Average the number of connection per pawn
+        connectednessRating /= pawns.length;
+        connectednessRating *= 4; // Weight
+
+        // Average the COM rating
+        centerOfMassRating /= pawns.length;
+        centerOfMassRating *= -1; // Weight
+
+        // Calculate the uniformity rating
+        uniformityRating = (maxX - minX) * (maxY - minY);
+        uniformityRating *= -2; // Weight
+
+        // Calculate the value of the board
+        value += connectednessRating;
+        value += centerOfMassRating;
+        value += uniformityRating;
         return value;
     }
 
@@ -34,6 +114,7 @@ public class Evaluator
     private static int connectednessRating(Coordinate[] pawns, byte[][] byteBoard, byte colorCode)
     {
         int score = 0;
+        int connectedPawns = 0;
 
         // Count the number of connected pawns
         for (int i = 0; i < pawns.length; i++)
@@ -41,24 +122,38 @@ public class Evaluator
             int x = pawns[i].X;
             int y = pawns[i].Y;
 
-            if      (x < 7 && byteBoard[x + 1][y] == colorCode) score++;
-            else if (x > 0 && byteBoard[x - 1][y] == colorCode) score++;
-            else if (y > 0 && byteBoard[x][y - 1] == colorCode) score++;
-            else if (y < 7 && byteBoard[x][y + 1] == colorCode) score++;
+            if      (x < 7 && byteBoard[x + 1][y] == colorCode) connectedPawns++;
+            else if (x > 0 && byteBoard[x - 1][y] == colorCode) connectedPawns++;
+            else if (y > 0 && byteBoard[x][y - 1] == colorCode) connectedPawns++;
+            else if (y < 7 && byteBoard[x][y + 1] == colorCode) connectedPawns++;
 
-            else if (x < 7 && y < 7 && byteBoard[x + 1][y + 1] == colorCode) score++;
-            else if (x > 0 && y < 7 && byteBoard[x - 1][y + 1] == colorCode) score++;
-            else if (x < 7 && y > 0 && byteBoard[x + 1][y - 1] == colorCode) score++;
-            else if (x > 0 && y > 0 && byteBoard[x - 1][y - 1] == colorCode) score++;
+            else if (x < 7 && y < 7 && byteBoard[x + 1][y + 1] == colorCode) connectedPawns++;
+            else if (x > 0 && y < 7 && byteBoard[x - 1][y + 1] == colorCode) connectedPawns++;
+            else if (x < 7 && y > 0 && byteBoard[x + 1][y - 1] == colorCode) connectedPawns++;
+            else if (x > 0 && y > 0 && byteBoard[x - 1][y - 1] == colorCode) connectedPawns++;
+
+            if (x == 0 || x == 7) score -= 2;
+            if (y == 0 || y == 7) score -= 2;
+
+            if (x < 7 && byteBoard[x + 1][y] == colorCode) score++;
+            if (x > 0 && byteBoard[x - 1][y] == colorCode) score++;
+            if (y > 0 && byteBoard[x][y - 1] == colorCode) score++;
+            if (y < 7 && byteBoard[x][y + 1] == colorCode) score++;
+
+            if (x < 7 && y < 7 && byteBoard[x + 1][y + 1] == colorCode) score++;
+            if (x > 0 && y < 7 && byteBoard[x - 1][y + 1] == colorCode) score++;
+            if (x < 7 && y > 0 && byteBoard[x + 1][y - 1] == colorCode) score++;
+            if (x > 0 && y > 0 && byteBoard[x - 1][y - 1] == colorCode) score++;
         }
 
         // Check if the player has won
-        if (score == pawns.length)
+        if (connectedPawns == pawns.length)
         {
             if (isWinning(pawns, byteBoard, colorCode)) return 100000;
         }
 
-        return score * score;
+        score /= pawns.length;// System.out.println("CON = " + score * 4);
+        return score * 4;
     }
 
     // Get the center of mass
@@ -90,10 +185,10 @@ public class Evaluator
             int distanceD = (int)Math.floor(Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2)));
 
             int distance = Math.max(Math.max(distanceX, distanceY), distanceD);
-            score += (int)Math.pow(distance, 2); // The distance is squared so the AI focuses on the farthest pawns
+            score += (int)Math.pow(distance, 4); // The distance is cubed to force the AI to move the farthest pawns
         }
 
-        score *= -score;
+        score *= -1; //System.out.println("COM = " + score/pawns.length);
         return score / pawns.length; // The score is divided by the amount of pawn so the pawn count doesn't affect the evaluation result.
     }
 
@@ -115,8 +210,8 @@ public class Evaluator
             if      (Y > maxY) maxY = Y;
             else if (Y < minY) minY = Y;
         }
-        int area = (maxX - minX) * (maxY - minY);
-        return area * -area;
+        int area = (maxX - minX) * (maxY - minY);// System.out.println("UNI = " + area * -2);
+        return area * -2;
     }
 
     // This function evaluates the mobility of the pawns

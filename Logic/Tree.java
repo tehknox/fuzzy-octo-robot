@@ -9,6 +9,7 @@ public class Tree
     long timeA = 0; // Time when the function starts
     long timeOut;
     int bestValue = 0;
+    Move bestMove = null;
 
     // Tree constructor
     public Tree(Board currentBoard, int maxDepth, long timeOut)
@@ -31,7 +32,14 @@ public class Tree
         while (true)
         {
             int workingValue = buildTree(root, alpha, beta, true, currentBoard, 0, depth);
-            if (!interrupted) { bestValue = workingValue; System.out.println("Depth " + depth + " calculated. The best score is now: " + bestValue); depth++; }
+            if (!interrupted)
+            {
+                bestValue = workingValue;
+                System.out.println("Depth " + depth + " calculated. The best score is now: " + bestValue);
+                depth++;
+                for (int x = 0; x < root.children.size(); x++) { if (root.children.get(x).value == bestValue)   { bestMove = root.children.get(x).move; break; } }
+                root.children.clear();
+            }
             else break;
         }
     }
@@ -54,7 +62,7 @@ public class Tree
             {
                 System.out.println("Winning move detected.");
                 interrupted = true;
-                n.value = 1000000;  bestValue = n.value;
+                n.value = 1000000;  bestValue = n.value; bestMove = n.move;
                 return n.value;
             }
 
@@ -112,18 +120,6 @@ public class Tree
     // This function returns the best move found by the tree
     public Move getBestMove()
     {
-        Move bestMove = null;
-
-        // Search for the root's child that has the same value than the best tree value
-        for (int x = 0; x < root.children.size(); x++)
-        {
-            if (root.children.get(x).value == bestValue)
-            {
-                bestMove = root.children.get(x).move;
-                break;
-            }
-        }
-
         // If there's an error, pick a random move
         if (bestMove == null)
         {
