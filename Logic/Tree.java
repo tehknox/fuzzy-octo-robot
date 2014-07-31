@@ -6,11 +6,12 @@ public class Tree
 {
     Node root;
     Board currentBoard;
-    float timeOut;
+    long timeA = 0; // Time when the function starts
+    long timeOut;
     int bestValue = 0;
 
     // Tree constructor
-    public Tree(Board currentBoard, int maxDepth, float timeOut)
+    public Tree(Board currentBoard, int maxDepth, long timeOut)
     {
         this.currentBoard = currentBoard;
         this.timeOut = timeOut;
@@ -23,18 +24,40 @@ public class Tree
         root.move = null;
         root.children = new ArrayList<Node>();
 
-        bestValue = buildTree(root, alpha, beta, true, currentBoard, 0, maxDepth);
+        timeA = System.nanoTime(); // Get the time
+        int depth = 1;
+
+        // Iterative deepening - The tree will build progressively until the function timeouts
+        while (true)
+        {
+            int workingValue = buildTree(root, alpha, beta, true, currentBoard, 0, depth);
+            if (!interrupted) { bestValue = workingValue; System.out.println("Depth " + depth + " calculated. The best score is now: " + bestValue); depth++; }
+            else break;
+        }
     }
 
     // This function builds the tree, and finds the best move using the Minimax/Alpha-beta algorithm
-    private boolean interrupt = false;
+    boolean interrupted = false; // If this variable is true, the buildTree function will stop and the AI will pick the last calculated value
     private int buildTree(Node n, int alpha, int beta, boolean maximizing, Board board, int depth, int maxDepth)
     {
-        // If the function is interrupted
-        if (interrupt) return 0;
+        // Get the current time
+        long timeB = System.nanoTime();
+        if (timeB - timeA >= timeOut) interrupted = true;
+
+        // If the function is interrupted (timeout)
+        if (interrupted) return 0;
         // If the node is a leaf
         if (depth == maxDepth)
         {
+            // If the AI can win on the next turn, interrupt the function and force the winning move.
+            if (maxDepth == 1 && Evaluator.isWinning(board.getPawns(board.isPlayerIsBlack()), board.getBoard(), Util.getPawnColorCode(board.isPlayerIsBlack())))
+            {
+                System.out.println("Winning move detected.");
+                interrupted = true;
+                n.value = 1000000;  bestValue = n.value;
+                return n.value;
+            }
+
             n.value = Evaluator.evaluate(board);
             return n.value;
         }

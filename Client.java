@@ -48,7 +48,7 @@ public class Client
                     rollbackBoard = new Board(board);
 
                     // Generate a game tree
-                    Tree tree = new Tree(board, 4, 11f);
+                    Tree tree = new Tree(board, 4, 4000000000l);
 
                     // Rock on
                     Move nextMove = tree.getBestMove();
@@ -104,7 +104,7 @@ public class Client
                     board.movePawn(new Move(s));
 
                     // Generate a game tree
-                    Tree tree = new Tree(board, 4, 11f);
+                    Tree tree = new Tree(board, 4, 4000000000l);
 
                     // Rock on
                     Move nextMove = tree.getBestMove();
@@ -131,7 +131,7 @@ public class Client
                     board = new Board(rollbackBoard);
 
                     // Generate a game tree
-                    Tree tree = new Tree(board, 4, 11f);
+                    Tree tree = new Tree(board, 4, 4000000000l);
 
                     // Rock on
                     Move nextMove = tree.getBestMove();

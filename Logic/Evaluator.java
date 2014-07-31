@@ -147,7 +147,7 @@ public class Evaluator
     }
 
     // Check if a player is winning.
-    private static boolean isWinning(Coordinate[] pawns, byte[][] byteBoard, byte colorCode)
+    public static boolean isWinning(Coordinate[] pawns, byte[][] byteBoard, byte colorCode)
     {
         int connectedPawnCount = findConnectedPawns(pawns, pawns[0], byteBoard, colorCode, new ArrayList<Coordinate>());
         if (connectedPawnCount == pawns.length) return true;
